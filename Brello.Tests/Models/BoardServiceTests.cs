@@ -16,6 +16,7 @@ namespace Brello.Tests.Models
             Assert.IsNotNull(board);
         }
 
+        /*
         [TestMethod]
         public void BoardServiceEnsureICanAddAList()
         {
@@ -35,5 +36,6 @@ namespace Brello.Tests.Models
             int actual = board.GetAllLists().Count;
             Assert.AreEqual(expected, actual);
         }
+        */
     }
 }
