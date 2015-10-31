@@ -111,6 +111,8 @@
     <Compile Include="Models\CardTests.cs" />
     <Compile Include="Models\BoardServiceTests.cs" />
     <Compile Include="Models\CarTests.cs" />
+    <Compile Include="Models\BoardTests.cs" />
+    <Compile Include="Models\BrelloListTests.cs" />
     <Compile Include="Models\VoteTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Controllers\HomeControllerTest.cs" />
