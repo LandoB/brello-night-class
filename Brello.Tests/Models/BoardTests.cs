@@ -19,7 +19,7 @@ namespace Brello.Tests.Models
         {
             //Color color = new Color { Name = "Blue", Value = "#0000ff" };
             // Object Initializer syntax
-            Board board = new Board();
+            Board board = new Board { Title = "My Board" };
             Assert.AreEqual("My Board", board.Title);
             Assert.AreEqual(0, board.Lists.Count);
             Assert.AreEqual(0, board.Followers.Count);
