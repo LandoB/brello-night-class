@@ -11,5 +11,6 @@ namespace Brello.Models
         public string Title { get; set; }
         public List<Card> Cards { get; set; }
         public DateTime CreatedAt { get; set; }
+
     }
 }

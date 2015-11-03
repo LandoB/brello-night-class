@@ -11,7 +11,10 @@ namespace Brello.Models
         // Uses the connection string from the Web.config named "BoardContext"
         //public BoardContext() : base("name=BoardContext") { }
 
+        // These are our tables:
         public virtual IDbSet<Color> Colors { get; set; }
         public virtual IDbSet<Card> Cards { get; set; }
+        public virtual IDbSet<Board> Boards { get; set; }
+
     }
 }
