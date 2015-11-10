@@ -5,6 +5,7 @@ using Moq;
 using System.Data.Entity;
 using System.Collections.Generic;
 using System.Linq;
+using System.Collections;
 
 namespace Brello.Tests.Models
 {
@@ -13,17 +14,43 @@ namespace Brello.Tests.Models
     {
 
         private Mock<BoardContext> mock_context;
+        private Mock<DbSet<Board>> mock_boards;
+        private List<Board> my_list;
+        private ApplicationUser owner, user1, user2;
+
+        private void ConnectMocksToDataSource()
+        {
+            // This setups the Mocks and connects to the Data Source (my_list in this case)
+            var data = my_list.AsQueryable();
+
+            mock_boards.As<IQueryable<Board>>().Setup(m => m.Provider).Returns(data.Provider);
+            mock_boards.As<IQueryable<Board>>().Setup(m => m.GetEnumerator()).Returns(data.GetEnumerator());
+            mock_boards.As<IQueryable<Board>>().Setup(m => m.ElementType).Returns(data.ElementType);
+            mock_boards.As<IQueryable<Board>>().Setup(m => m.Expression).Returns(data.Expression);
+
+            mock_context.Setup(m => m.Boards).Returns(mock_boards.Object);
+        }
 
         [TestInitialize]
         public void Initialize()
         {
             mock_context = new Mock<BoardContext>();
+            mock_boards = new Mock<DbSet<Board>>();
+            my_list = new List<Board>();
+            owner = new ApplicationUser();
+            user1 = new ApplicationUser();
+            user2 = new ApplicationUser();
         }
 
         [TestCleanup]
         public void Cleanup()
         {
             mock_context = null;
+            mock_boards = null;
+            my_list = null;
+            owner = null;
+            user1 = null;
+            user2 = null;
         }
 
         [TestMethod]
@@ -37,40 +64,53 @@ namespace Brello.Tests.Models
         public void BoardRepositoryEnsureICanAddAList()
         {
             BoardRepository board_repo = new BoardRepository(mock_context.Object);
-            BrelloList list = new BrelloList();
-            Board board = new Board();
+            BrelloList list = new BrelloList { Title="ToDo", BrelloListId=1 };
+            my_list.Add(new Board { Title = "My First Board", Owner = user1, BoardId = 1 });
 
-            bool actual = board_repo.AddList(board, list);
+            ConnectMocksToDataSource();
 
-            Assert.AreEqual(1, board_repo.GetAllLists().Count);
+            bool actual = board_repo.AddList(1, list);
+
+            Assert.AreEqual(1, board_repo.GetListCount());
             Assert.IsTrue(actual);
+        }
+
+        [TestMethod]
+        public void BoardRepositoryEnsureFalseIfInvalidBoardId()
+        {
+            BoardRepository board_repo = new BoardRepository(mock_context.Object);
+            BrelloList list = new BrelloList { Title = "ToDo", BrelloListId = 1 };
+            my_list.Add(new Board { Title = "My First Board", Owner = user1, BoardId = 1 });
+
+            ConnectMocksToDataSource();
+
+            bool actual = board_repo.AddList(3, list);
+
+            Assert.AreEqual(0, board_repo.GetListCount());
+            Assert.IsFalse(actual);
         }
 
         [TestMethod]
         public void BoardRepositoryEnsureICanGetAllLists()
         {
             /* Begin Arrange */
-            var mock_boards = new Mock<DbSet<Board>>();
-            ApplicationUser user1 = new ApplicationUser();
-            ApplicationUser user2 = new ApplicationUser();
             var brello_lists = new List<BrelloList>
             {
                 new BrelloList { Title = "My List", BrelloListId = 1 }
 
             };
 
+            /*
             var my_list = new List<Board> {
                 new Board { Title = "Tim's Board", Owner = user1, BoardId = 1, Lists = brello_lists },
                 new Board { Title = "Sally's Board", Owner = user2, BoardId = 2, Lists = brello_lists }
             }; // So I can use later
-            var data = my_list.AsQueryable();
+            */
 
-            mock_boards.As<IQueryable<Board>>().Setup(m => m.Provider).Returns(data.Provider);
-            mock_boards.As<IQueryable<Board>>().Setup(m => m.GetEnumerator()).Returns(data.GetEnumerator());
-            mock_boards.As<IQueryable<Board>>().Setup(m => m.ElementType).Returns(data.ElementType);
-            mock_boards.As<IQueryable<Board>>().Setup(m => m.Expression).Returns(data.Expression);
+            my_list.Add(new Board { Title = "Tim's Board", Owner = user1, BoardId = 1, Lists = brello_lists });
+            my_list.Add(new Board { Title = "Sally's Board", Owner = user2, BoardId = 2, Lists = brello_lists });
 
-            mock_context.Setup(m => m.Boards).Returns(mock_boards.Object);
+            ConnectMocksToDataSource();
             BoardRepository board_repo = new BoardRepository(mock_context.Object);
             /* End Arrange */
 
@@ -90,21 +130,10 @@ namespace Brello.Tests.Models
         public void BoardRepositoryEnsureThereAreZeroLists()
         {
             /* Begin Arrange */
-            var mock_boards = new Mock<DbSet<Board>>();
-            ApplicationUser user1 = new ApplicationUser();
-            ApplicationUser user2 = new ApplicationUser();
-            var my_list = new List<Board> {
-                new Board { Title = "Tim's Board", Owner = user1},
-                new Board {Title = "Sally's Board", Owner = user2 }
-            }; // So I can use later
-            var data = my_list.AsQueryable();
+            my_list.Add(new Board { Title = "Tim's Board", Owner = user1 });
+            my_list.Add(new Board { Title = "Sally's Board", Owner = user2 });
 
-            mock_boards.As<IQueryable<Board>>().Setup(m => m.Provider).Returns(data.Provider);
-            mock_boards.As<IQueryable<Board>>().Setup(m => m.GetEnumerator()).Returns(data.GetEnumerator());
-            mock_boards.As<IQueryable<Board>>().Setup(m => m.ElementType).Returns(data.ElementType);
-            mock_boards.As<IQueryable<Board>>().Setup(m => m.Expression).Returns(data.Expression);
-
-            mock_context.Setup(m => m.Boards).Returns(mock_boards.Object);
+            ConnectMocksToDataSource();
 
             BoardRepository board_repo = new BoardRepository(mock_context.Object);
             /* End Arrange */
@@ -123,11 +152,7 @@ namespace Brello.Tests.Models
         public void BoardRepositoryEnsureABoardHasZeroLists()
         {
             /* Begin Arrange */
-            var mock_boards = new Mock<DbSet<Board>>();
-            ApplicationUser user1 = new ApplicationUser();
-            var my_list = new List<Board> {
-                new Board { Title = "Tim's Board", Owner = user1, BoardId = 1}
-            }; // So I can use later
+            my_list.Add(new Board { Title = "Tim's Board", Owner = user1, BoardId = 1 });
             var data = my_list.AsQueryable();
 
             mock_boards.As<IQueryable<Board>>().Setup(m => m.Provider).Returns(data.Provider);
@@ -147,13 +172,9 @@ namespace Brello.Tests.Models
         public void BoardRepositoryCanGetABoard()
         {
             /* Begin Arrange */
-            var mock_boards = new Mock<DbSet<Board>>();
-            ApplicationUser user1 = new ApplicationUser();
-            ApplicationUser user2 = new ApplicationUser();
-            var my_list = new List<Board> {
-                new Board { Title = "Tim's Board", Owner = user1},
-                new Board {Title = "Sally's Board", Owner = user2 }
-            }; // So I can use later
+            my_list.Add(new Board { Title = "Tim's Board", Owner = user1 });
+            my_list.Add(new Board { Title = "Sally's Board", Owner = user2 });
+                
             var data = my_list.AsQueryable();
 
             mock_boards.As<IQueryable<Board>>().Setup(m => m.Provider).Returns(data.Provider);
@@ -180,10 +201,6 @@ namespace Brello.Tests.Models
         public void BoardRepositoryCanGetBoardCount()
         {
             /* Begin Arrange */
-            var mock_boards = new Mock<DbSet<Board>>();
-
-            var my_list = new List<Board>(); // So I can use later
-
             var data = my_list.AsQueryable();
 
             //mock_boards.Object.Add(new Board { Title = "My Awesome Board", Owner = new ApplicationUser() });
@@ -221,8 +238,6 @@ namespace Brello.Tests.Models
         public void BoardRepositoryCanCreateBoard()
         {
             /* Begin Arrange */
-            var mock_boards = new Mock<DbSet<Board>>();
-            var my_list = new List<Board>();
             var data = my_list.AsQueryable();
 
             mock_boards.As<IQueryable<Board>>().Setup(m => m.Provider).Returns(data.Provider);
@@ -257,26 +272,16 @@ namespace Brello.Tests.Models
         public void BoardRepositoryEnsureICanGetAllBoards()
         {
             /* Begin Arrange */
-            var mock_boards = new Mock<DbSet<Board>>();
-
-            ApplicationUser owner = new ApplicationUser();
 
             // 1. Your data must be Queryable
             // 2. Mocks can only cast to an Interface (e.g. IQueryable, IDbSet, etc).
             // 3. You must ensure Provider, GetEnumerator(), ElementType, and Expression are defined
             //    with your collection class (the container class that holds your data).
-            
-            var data = new List<Board> {
-                new Board { Title = "My Awesome Board", Owner = owner },
-                new Board { Title = "My Other Awesome Board", Owner = owner }
-            }.AsQueryable();
-            
-            mock_boards.As<IQueryable<Board>>().Setup(m => m.Provider).Returns(data.Provider);
-            mock_boards.As<IQueryable<Board>>().Setup(m => m.GetEnumerator()).Returns(data.GetEnumerator());
-            mock_boards.As<IQueryable<Board>>().Setup(m => m.ElementType).Returns(data.ElementType);
-            mock_boards.As<IQueryable<Board>>().Setup(m => m.Expression).Returns(data.Expression);
-            
-            mock_context.Setup(m => m.Boards).Returns(mock_boards.Object);
+
+            my_list.Add(new Board { Title = "My Awesome Board", Owner = owner });
+            my_list.Add(new Board { Title = "My Other Awesome Board", Owner = owner });
+
+            ConnectMocksToDataSource();
 
             BoardRepository board_repo = new BoardRepository(mock_context.Object);
             /* End Arrange */
