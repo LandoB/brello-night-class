@@ -28,6 +28,8 @@ namespace Brello.Tests.Models
             mock_boards.As<IQueryable<Board>>().Setup(m => m.Expression).Returns(data.Expression);
 
             mock_context.Setup(m => m.Boards).Returns(mock_boards.Object);
+
+
         }
 
         [TestInitialize]
@@ -267,6 +269,30 @@ namespace Brello.Tests.Models
             Assert.AreEqual(2, boards.Count);
             /* End Assert */
         }
+
+        [TestMethod]
+        public void BoardRepositoryEnsureICanUpdateBoard()
+        {
+            //Begin Arrange
+            var board = new Board { BoardId = 1, Title = "Sally's Board", Owner = user2 };
+            var newBoard = new Board { BoardId = 1, Title = "Sally's Updated Board", Owner = user2 };
+            my_list.Add(board);
+
+            ConnectMocksToDataSource();
+
+            BoardRepository repo = new BoardRepository(mock_context.Object);
+            //End Arrange
+
+            //Begin Act
+            var updatedBoard = repo.UpdateBoard(newBoard);
+            //End Act
+
+            //Begin Assert
+            Assert.AreEqual(updatedBoard.Title, "Sally's Updated Board");
+            //End Assert    
+        }
+
+
         
     }
 }

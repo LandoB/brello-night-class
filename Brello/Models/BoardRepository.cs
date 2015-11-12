@@ -81,5 +81,14 @@ namespace Brello.Models
         {
             return GetAllLists().Count;
         }
+
+        public Board UpdateBoard (Board _newBoard)
+        {
+            var query = from b in context.Boards where b.BoardId == _newBoard.BoardId select b;
+            Board board = query.Single<Board>();
+            board = _newBoard;
+            context.SaveChanges();
+            return board;
+        }
     }
 }
