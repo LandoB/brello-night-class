@@ -292,7 +292,5 @@ namespace Brello.Tests.Models
             //End Assert    
         }
 
-
-        
     }
 }
