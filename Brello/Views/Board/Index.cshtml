@@ -1,0 +1,20 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    
+}
+
+    <h1>@ViewBag.Message</h1>
+@using (Html.BeginForm("Create", "Board", FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
+    @Html.TextBox("Name")
+    
+}
+
+<ul>
+    @foreach (var item in ViewBag.Things)
+    {
+        <li>@item</li>
+    }
+</ul>
+
