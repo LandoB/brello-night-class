@@ -4,6 +4,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
+using Microsoft.AspNet.Identity;
+using Microsoft.AspNet.Identity.Owin;
+using Microsoft.Owin.Security;
+
 
 namespace Brello.Controllers
 {
@@ -14,7 +18,7 @@ namespace Brello.Controllers
 
         public BoardController()
         {
-            //repository = new BoardRepository();
+            repository = new BoardRepository();
         }
 
         public BoardController(BoardRepository _repo)
@@ -26,16 +30,29 @@ namespace Brello.Controllers
         [Authorize]
         public ActionResult Index()
         {
+            //UserManager<ApplicationUser> manager = new UserManager<ApplicationUser>();
+            UserManager<ApplicationUser> manager = HttpContext.GetOwinContext().GetUserManager<ApplicationUserManager>();
+            ApplicationUser me = manager.FindById(User.Identity.GetUserId());
 
-            //ViewBag.Boards = repository.GetAllBoards();
-            ViewBag.Title = "My Boards";
+            List<Board> boards = repository.GetBoards(me);
+            Board my_board = null;
+            if (boards.Count() > 0)
+            {
+                my_board = repository.CreateBoard("Board One", me);
+            }
+            else
+            {
+                my_board = boards.First();
+            }
 
-            var things = new List<string>();
-            things.Add("foo");
-            things.Add("bar");
+            ViewBag.Title = my_board.Title;
 
-            //ViewBag.Things = things;
-            return View("Index",things);
+            // Will use this later:
+            //bool successful = repository.AddList(my_board.BoardId, new BrelloList { Title = "ToDo" });
+
+            List<BrelloList> board_lists = repository.GetAllLists(my_board.BoardId);
+
+            return View();
         }
 
         // GET: Board/Details/5

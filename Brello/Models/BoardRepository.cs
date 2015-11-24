@@ -13,6 +13,11 @@ namespace Brello.Models
             context = _context;
         }
 
+        public BoardRepository()
+        {
+            context = new BoardContext();
+        }
+
         // void or bool or BrelloList
         public bool AddList(int _board_id, BrelloList _list)
         {
