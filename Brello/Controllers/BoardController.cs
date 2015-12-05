@@ -30,8 +30,9 @@ namespace Brello.Controllers
         public ActionResult Index()
         {
             //UserManager<ApplicationUser> manager = new UserManager<ApplicationUser>();
-            UserManager<ApplicationUser> manager = HttpContext.GetOwinContext().GetUserManager<ApplicationUserManager>();
-            ApplicationUser me = manager.FindById(User.Identity.GetUserId());
+            //UserManager<ApplicationUser> manager = HttpContext.GetOwinContext().GetUserManager<ApplicationUserManager>();
+            string user_id = User.Identity.GetUserId();
+            ApplicationUser me = repository.Users.FirstOrDefault(u => u.Id == user_id);
 
             List<Board> boards = repository.GetBoards(me);
             Board my_board = null;
@@ -43,6 +44,7 @@ namespace Brello.Controllers
                 my_board = boards.First();
             }
             ViewBag.Title = my_board.Title;
+            ViewBag.CurrentBoardId = my_board.BoardId;
 
             //bool successful = repository.AddList(my_board.BoardId, new BrelloList { Title = "ToDo" });
 
@@ -61,6 +63,20 @@ namespace Brello.Controllers
         public ActionResult Create()
         {
             return View();
+        }
+
+        [HttpPost]
+        public ActionResult CreateList(FormCollection form)
+        {
+            string list_name = form.Get("list-name");
+            string board_id = form.Get("board-id");
+            Board current_board = repository.GetBoardById(int.Parse(board_id));
+            if (current_board != null)
+            {
+                repository.AddList(current_board.BoardId, new BrelloList { Title = list_name });
+            }
+            return RedirectToAction("Index");
+            
         }
 
         // POST: Board/Create

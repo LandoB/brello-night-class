@@ -2,22 +2,38 @@
 
 @{
 
-        Layout = "~/Views/Shared/_BrelloLayout.cshtml";
+    Layout = "~/Views/Shared/_BrelloLayout.cshtml";
 }
 <div id="board" class="green container-fluid">
     <div class="row" style="display:inline-flex;">
         @foreach (var item in Model)
         {
             <div class="brellolist-wrapper">
-                <div class="brellolist-header"></div>
+                <div class="brellolist-header">@item.Title</div>
                 <div class="brellolist">
-                    <ul class="center">
-
-                    </ul>
+                    <ul class="center"></ul>
                 </div>
                 <div class="brellolist-footer"></div>
             </div>
         }
+        <div class="brellolist-wrapper">
+            <div id="list-modal" role="dialog" class="modal fade">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        @using (Html.BeginForm("CreateList", "Board", FormMethod.Post, new { id = "list-form" }))
+                        {
+                            @Html.AntiForgeryToken()
+                            @Html.Hidden("board-id", ViewBag.CurrentBoardId as object)
+                            <div class="modal-header">Add New List to @ViewBag.CurrentBoardId</div>
+                            <div class="modal-body">@Html.TextBox("list-name")</div>
+                            <div class="modal-footer"><input class="btn" type="submit" value="Submit" /></div>
+                            <!--a href="javascript:document.getElementById('logoutForm').submit()">Log off</a-->
+                        }
+                    </div>
+                </div>
+            </div>
+            <button class="btn btn-info" data-toggle="modal" data-target="#list-modal">Create</button>
+        </div>
     </div>
 </div>
 
@@ -26,11 +42,9 @@
 
 
 
-    @*@using (Html.BeginForm("Create", "Board", FormMethod.Post, htmlAttributes: new { style = "display:block;", @class = "mystyle"}))
+@*@using (Html.BeginForm("Create", "Board", FormMethod.Post, htmlAttributes: new { style = "display:block;", @class = "mystyle"}))
     {
         @Html.AntiForgeryToken()
         @Html.TextBox("name")
-    }*@
-
-    
+    }*@ 
         

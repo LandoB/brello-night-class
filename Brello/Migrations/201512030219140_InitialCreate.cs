@@ -153,12 +153,12 @@ namespace Brello.Migrations
         {
             DropForeignKey("dbo.AspNetUserRoles", "RoleId", "dbo.AspNetRoles");
             DropForeignKey("dbo.Boards", "Owner_Id", "dbo.AspNetUsers");
-            DropForeignKey("dbo.BrelloLists", "Board_BoardId", "dbo.Boards");
             DropForeignKey("dbo.Cards", "BrelloList_BrelloListId", "dbo.BrelloLists");
             DropForeignKey("dbo.Votes", "User_Id", "dbo.AspNetUsers");
             DropForeignKey("dbo.Votes", "Card_CardId", "dbo.Cards");
             DropForeignKey("dbo.Cards", "BorderColor_ColorId", "dbo.Colors");
             DropForeignKey("dbo.AspNetUsers", "Card_CardId", "dbo.Cards");
+            DropForeignKey("dbo.BrelloLists", "Board_BoardId", "dbo.Boards");
             DropForeignKey("dbo.AspNetUsers", "Board_BoardId", "dbo.Boards");
             DropForeignKey("dbo.AspNetUserRoles", "UserId", "dbo.AspNetUsers");
             DropForeignKey("dbo.AspNetUserLogins", "UserId", "dbo.AspNetUsers");
